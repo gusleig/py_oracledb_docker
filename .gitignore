@@ -28,4 +28,4 @@ instance/
 pip-log.txt
 pip-delete-this-directory.txt
 
-.DS_store
+.DS_Store
