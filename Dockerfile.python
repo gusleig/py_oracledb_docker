@@ -1,0 +1,43 @@
+# Base Image for builder
+FROM python:3.9 as builder
+
+# Install Requirements
+COPY requirements.txt /
+RUN pip wheel --no-cache-dir --no-deps --wheel-dir /wheels -r requirements.txt
+
+# Build the app image
+FROM python:3.9
+
+ENV LD_LIBRARY_PATH=/opt/oracle/instantclient_21_4
+RUN apt-get update && \
+    apt-get install -y libpq-dev zlib1g-dev build-essential shared-mime-info libaio1 libaio-dev unzip wget --no-install-recommends && \
+    wget --no-check-certificate https://download.oracle.com/otn_software/linux/instantclient/214000/instantclient-sdk-linux.x64-21.4.0.0.0dbru.zip && \
+    wget --no-check-certificate https://download.oracle.com/otn_software/linux/instantclient/214000/instantclient-sqlplus-linux.x64-21.4.0.0.0dbru.zip && \
+    wget --no-check-certificate https://download.oracle.com/otn_software/linux/instantclient/214000/instantclient-basic-linux.x64-21.4.0.0.0dbru.zip && \
+    mkdir -p /opt/oracle && \
+    cp instantclient-* /opt/oracle/ && \
+    cd /opt/oracle/ && \
+    unzip instantclient-basic-linux.x64-21.4.0.0.0dbru.zip && \
+    unzip instantclient-sdk-linux.x64-21.4.0.0.0dbru.zip && \
+    unzip instantclient-sqlplus-linux.x64-21.4.0.0.0dbru.zip && \
+    rm -rf /var/lib/apt/lists/* instantclient-basic-linux.x64-21.4.0.0.0dbru.zip instantclient-sdk-linux.x64-21.4.0.0.0dbru.zip instantclient-sqlplus-linux.x64-21.4.0.0.0dbru.zip && \
+    apt -y clean && \
+    apt -y autoremove && \
+    rm -rf /var/cache/apt
+
+# Create directory for the app user
+RUN mkdir -p /app
+
+# Create the app user
+RUN groupadd app && useradd -g app app
+
+# Install Requirements
+COPY --from=builder /wheels /wheels
+COPY --from=builder requirements.txt .
+RUN pip install --no-cache /wheels/*
+
+RUN chown -R app:app /app
+
+USER app
+
+WORKDIR /app
