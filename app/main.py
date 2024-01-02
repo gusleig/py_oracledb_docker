@@ -13,6 +13,7 @@ DB_PASSWORD = os.environ.get("DB_PASSWORD")
 DB_SERVER = os.environ.get("DB_SERVER")
 DB_LIB_PATH = os.environ.get("DB_LIB_PATH")
 
+
 @app.get("/")
 def read_root():
     return {"Hello": "World"}
