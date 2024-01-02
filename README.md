@@ -19,3 +19,9 @@ DB_SERVER=192.168.68.10/orcl_db_name
 If you want to run verbosly, you can use:
 
 ```bash docker-compose up --build```
+
+To get into docker shell
+
+```
+docker exec -it python_docker-python-1 bash
+```
